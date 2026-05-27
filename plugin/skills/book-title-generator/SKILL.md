@@ -193,14 +193,31 @@ Confirm with the user:
 
 > "Your title is: **[Title]**. Ready to lock it in?"
 
-The next step is `/novel-chapter-mapper`, which will use this title in its output filename.
+Once confirmed, do both of the following:
+
+1. **Write `book-title.md` to the book root** (the pipeline validator reads it here):
+
+   ```
+   Final Title: [Chosen Title]
+   ```
+
+2. **Create the title folder** — a subfolder inside the book's working directory named after the chosen title, sanitized for Windows:
+   - Replace `:` with ` -` (e.g., `System: Reborn` → `System - Reborn`)
+   - Remove any characters illegal on Windows: `< > " / \ | ? *`
+   - Trim extra whitespace
+   
+   Example: `The Iron Throne: A Beginning` → `The Iron Throne - A Beginning`
+
+   This **title folder** is where every file from Step 7 (Chapter Map) through Step 11 (Cover Prompt) will be written. It keeps all draft files for this title grouped together, separate from the story scaffolding files (Steps 1–5) at the book root.
+
+The next step is `/novel-chapter-mapper`, which will write its chapter map into the title folder.
 
 ---
 
 ## Agentic Handoff
 
-When invoked by the orchestrator (`/ai-publishing-house`) in auto-chain mode, after the user locks in their chosen title and `book-title.md` is written, end with the exact line:
+When invoked by the orchestrator (`/ai-publishing-house`) in auto-chain mode, after the user locks in their chosen title, `book-title.md` is written, and the title folder is created, end with the exact line:
 
-> **Step 6 complete. Output: `[book-folder]/book-title.md`**
+> **Step 6 complete. Output: `[book-folder]/book-title.md` | Title folder: `[book-folder]/[sanitized-title]/`**
 
 The orchestrator will then run `pipeline_validator.py --step 6` and route to Step 7 (`/novel-chapter-mapper`). When invoked manually by the user, end as described in the Output section above.

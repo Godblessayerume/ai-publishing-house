@@ -469,7 +469,9 @@ Do not deliver the prompt until every question in this gate can be answered with
 
 ## Output
 
-Write the completed prompt to: `book-cover-prompt.md` in the active book's working directory.
+Write the completed prompt to: `[title-folder]/book-cover-prompt.md`.
+
+**Finding the title folder:** Read `book-title.md` at the book root, extract the `Final Title:` value, sanitize it (replace `:` with ` -`, remove `< > " / \ | ? *`). The title folder was created by Step 6.
 
 The file should contain only the final formatted prompt — no planning notes, no skill commentary, no intermediate decisions. The user should be able to open the file and paste the prompt directly into their image generator of choice.
 
@@ -481,6 +483,6 @@ The next step is to paste the prompt into Midjourney, DALL-E, Adobe Firefly, Ima
 
 When invoked by the orchestrator (`/ai-publishing-house`) in auto-chain mode, after the cover prompt file is written end with the exact line:
 
-> **Step 11 complete. Output: `[book-folder]/book-cover-prompt.md`**
+> **Step 11 complete. Output: `[book-folder]/[sanitized-title]/book-cover-prompt.md`**
 
 The orchestrator will then run `pipeline_validator.py --step 11` and report that the pipeline is complete. This is the terminal step — no further skills follow. When invoked manually by the user, end as described above.

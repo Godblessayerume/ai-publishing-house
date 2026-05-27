@@ -20,7 +20,7 @@ Confirm all of the following exist in the active book's working directory:
 - `story-config.md` — sub-genre and plot archetypes
 - `story-seed.md` — C/W/D/A/C breakdown and expanded seed
 - `3-act-outline.md` — seasoned outline (confirmed by `## Macro Architecture` section)
-- `[book-title]-chapter-map.md` — complete chapter-by-chapter map from `/novel-chapter-mapper`
+- `[title-folder]/[book-title]-chapter-map.md` — complete chapter-by-chapter map from `/novel-chapter-mapper` (inside the title folder created by Step 6)
 - `world/characters/character-list.md` and all files in `world/characters/bios/`
 - All setting files in `world/settings/`
 
@@ -30,7 +30,7 @@ If any are missing, stop and name what is missing before proceeding.
 
 ## How the Production Run Works
 
-1. Read `[book-title]-chapter-map.md` in full — all chapters, all entries
+1. Read `[title-folder]/[book-title]-chapter-map.md` in full — all chapters, all entries
 2. Count the total chapters
 3. Tell the user: "Drafting [N] chapters. Starting now."
 4. Draft each chapter from Chapter 1 to Chapter N in order, without pausing
@@ -44,7 +44,7 @@ Do not stop between chapters to ask for feedback or approval. This is a drafting
 
 ### Step 1: Load the Chapter Map Entry
 
-From `[book-title]-chapter-map.md`, read the entry for this chapter:
+From `[title-folder]/[book-title]-chapter-map.md`, read the entry for this chapter:
 - Working title
 - Beat assignment
 - Setting (specific location)
@@ -115,7 +115,9 @@ Apply all 14 Author Voice Guide rules. Specifically:
 
 ## Output
 
-Write each chapter to: `chapters/chapter-[NN].md` in the active book's working directory.
+Write each chapter to: `[title-folder]/chapters/chapter-[NN].md`.
+
+**Finding the title folder:** Read `book-title.md` at the book root, extract the `Final Title:` value, sanitize it (replace `:` with ` -`, remove `< > " / \ | ? *`). The title folder was created by Step 6.
 
 Use zero-padded numbering: `chapter-01.md`, `chapter-02.md`, ..., `chapter-12.md`.
 
@@ -138,7 +140,7 @@ After all chapters are written, report:
 |---|---|
 | **Total chapters drafted** | [N] |
 | **Total estimated word count** | ~[X] words |
-| **Chapter files written** | `chapters/chapter-01.md` → `chapters/chapter-[NN].md` |
+| **Chapter files written** | `[title-folder]/chapters/chapter-01.md` → `[title-folder]/chapters/chapter-[NN].md` |
 
 The next step is `/novel-editor`.
 
@@ -159,7 +161,7 @@ The next step is `/novel-editor`.
 
 When invoked by the orchestrator (`/ai-publishing-house`) in auto-chain mode, after all chapters are drafted end with the exact line:
 
-> **Step 8 complete. Output: `[book-folder]/chapters/chapter-01.md` through `chapter-NN.md` ([N] chapters drafted)**
+> **Step 8 complete. Output: `[book-folder]/[sanitized-title]/chapters/chapter-01.md` through `chapter-NN.md` ([N] chapters drafted)**
 
 If the orchestrator passed in a partial-resume context (e.g., "resume from chapter-06"), begin drafting at that chapter rather than chapter-01 and skip any chapters that already exist.
 

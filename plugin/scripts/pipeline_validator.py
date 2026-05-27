@@ -132,8 +132,8 @@ def check_step_6(book_dir):
     return ok(6, "final title locked")
 
 
-def find_chapter_map(book_dir):
-    candidates = glob.glob(os.path.join(book_dir, "*-chapter-map.md"))
+def find_chapter_map(search_dir):
+    candidates = glob.glob(os.path.join(search_dir, "*-chapter-map.md"))
     if not candidates:
         return None
     return candidates[0]
@@ -145,10 +145,37 @@ def count_chapter_entries(chapter_map_path):
     return len(matches)
 
 
+def sanitize_folder_name(title):
+    """Sanitize a book title for use as a Windows folder name."""
+    result = title.replace(':', ' -')
+    for ch in '<>"/\\|?*':
+        result = result.replace(ch, '')
+    result = re.sub(r'\s{2,}', ' ', result)
+    return result.strip()
+
+
+def get_title_folder(book_dir):
+    """Return path to the title subfolder derived from book-title.md at the book root."""
+    path = os.path.join(book_dir, "book-title.md")
+    if not os.path.exists(path):
+        return None
+    content = read_text(path)
+    m = re.search(r'final\s+title\s*[:\-]\s*(.+)', content, re.IGNORECASE)
+    if not m:
+        return None
+    title = m.group(1).strip().strip('*').strip()
+    if not title:
+        return None
+    return os.path.join(book_dir, sanitize_folder_name(title))
+
+
 def check_step_7(book_dir):
-    path = find_chapter_map(book_dir)
+    title_dir = get_title_folder(book_dir)
+    if not title_dir:
+        return fail(7, "Cannot determine title folder — book-title.md missing or has no 'Final Title:' line (Step 6 incomplete)")
+    path = find_chapter_map(title_dir)
     if not path:
-        return fail(7, "No '*-chapter-map.md' file found in book folder")
+        return fail(7, f"No '*-chapter-map.md' found in title folder '{os.path.basename(title_dir)}'")
     count = count_chapter_entries(path)
     if count < 10:
         return fail(7, f"chapter-map has {count} chapter entries (expected at least 10)")
@@ -156,15 +183,18 @@ def check_step_7(book_dir):
 
 
 def check_step_8(book_dir):
-    chapters_dir = os.path.join(book_dir, "chapters")
+    title_dir = get_title_folder(book_dir)
+    if not title_dir:
+        return fail(8, "Cannot determine title folder — book-title.md missing (Step 6 incomplete)")
+    chapters_dir = os.path.join(title_dir, "chapters")
     if not os.path.isdir(chapters_dir):
-        return fail(8, "chapters/ directory is missing")
+        return fail(8, f"chapters/ directory is missing inside title folder '{os.path.basename(title_dir)}'")
     chapter_files = sorted([f for f in os.listdir(chapters_dir) if re.match(r"chapter-\d+\.md$", f)])
     if not chapter_files:
         return fail(8, "chapters/ directory is empty")
-    map_path = find_chapter_map(book_dir)
+    map_path = find_chapter_map(title_dir)
     if not map_path:
-        return fail(8, "No chapter map found — cannot verify completeness")
+        return fail(8, "No chapter map found in title folder — cannot verify completeness")
     expected = count_chapter_entries(map_path)
     actual = len(chapter_files)
     if actual < expected:
@@ -177,12 +207,15 @@ def check_step_8(book_dir):
 
 
 def check_step_9(book_dir):
-    chapters_dir = os.path.join(book_dir, "chapters")
+    title_dir = get_title_folder(book_dir)
+    if not title_dir:
+        return fail(9, "Cannot determine title folder — book-title.md missing (Step 6 incomplete)")
+    chapters_dir = os.path.join(title_dir, "chapters")
     if not os.path.isdir(chapters_dir):
-        return fail(9, "chapters/ directory is missing")
-    map_path = find_chapter_map(book_dir)
+        return fail(9, f"chapters/ directory is missing inside title folder '{os.path.basename(title_dir)}'")
+    map_path = find_chapter_map(title_dir)
     if not map_path:
-        return fail(9, "No chapter map found — cannot establish baseline")
+        return fail(9, "No chapter map found in title folder — cannot establish baseline")
     map_mtime = os.path.getmtime(map_path)
     chapter_files = sorted([f for f in os.listdir(chapters_dir) if re.match(r"chapter-\d+\.md$", f)])
     if not chapter_files:
@@ -198,14 +231,17 @@ def check_step_9(book_dir):
 
 
 def check_step_10(book_dir):
-    path = os.path.join(book_dir, "manuscript-final.md")
+    title_dir = get_title_folder(book_dir)
+    if not title_dir:
+        return fail(10, "Cannot determine title folder — book-title.md missing (Step 6 incomplete)")
+    path = os.path.join(title_dir, "manuscript-final.md")
     if not os.path.exists(path):
-        alt = os.path.join(book_dir, "manuscript_final.md")
+        alt = os.path.join(title_dir, "manuscript_final.md")
         if os.path.exists(alt):
             path = alt
         else:
-            return fail(10, "manuscript-final.md is missing")
-    chapters_dir = os.path.join(book_dir, "chapters")
+            return fail(10, f"manuscript-final.md is missing from title folder '{os.path.basename(title_dir)}'")
+    chapters_dir = os.path.join(title_dir, "chapters")
     if not os.path.isdir(chapters_dir):
         return ok(10, f"manuscript exists ({os.path.getsize(path)} bytes), no chapters/ folder to compare")
     chapter_files = [f for f in os.listdir(chapters_dir) if re.match(r"chapter-\d+\.md$", f)]
@@ -220,9 +256,12 @@ def check_step_10(book_dir):
 
 
 def check_step_11(book_dir):
-    path = os.path.join(book_dir, "book-cover-prompt.md")
+    title_dir = get_title_folder(book_dir)
+    if not title_dir:
+        return fail(11, "Cannot determine title folder — book-title.md missing (Step 6 incomplete)")
+    path = os.path.join(title_dir, "book-cover-prompt.md")
     if not os.path.exists(path):
-        return fail(11, "book-cover-prompt.md is missing")
+        return fail(11, f"book-cover-prompt.md is missing from title folder '{os.path.basename(title_dir)}'")
     if os.path.getsize(path) < 50:
         return fail(11, "book-cover-prompt.md is too small (under 50 bytes)")
     return ok(11, "cover prompt present")

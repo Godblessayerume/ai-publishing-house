@@ -30,23 +30,26 @@ Each book has its own folder inside the vault. The folder is created by `/novel-
 ```
 Fiction Library/
 └── [book-slug]/
-    ├── story-config.md
-    ├── story-seed.md
-    ├── 3-act-outline.md
-    ├── book-title.md
+    ├── story-config.md          ← Step 1
+    ├── story-seed.md            ← Step 2
+    ├── 3-act-outline.md         ← Steps 3 + 5
+    ├── book-title.md            ← Step 6 (lookup pointer — stays at root)
     ├── world/
     │   ├── world-map.md
     │   ├── settings/
     │   └── characters/
     │       ├── character-list.md
     │       └── bios/
-    ├── [book-title]-chapter-map.md
-    ├── chapters/
-    │   ├── chapter-01.md
-    │   └── ...
-    ├── manuscript-final.md
-    └── book-cover-prompt.md
+    └── [Sanitized Title]/       ← Step 6 creates this folder; Steps 7-11 write here
+        ├── [title]-chapter-map.md   ← Step 7
+        ├── chapters/                ← Steps 8-9
+        │   ├── chapter-01.md
+        │   └── ...
+        ├── manuscript-final.md      ← Step 10
+        └── book-cover-prompt.md     ← Step 11
 ```
+
+**Title folder name rule:** The folder name is the `Final Title` from `book-title.md` with `:` replaced by ` -` and Windows-illegal characters (`< > " / \ | ? *`) removed. Example: `The Iron King: Reborn` → `The Iron King - Reborn`.
 
 ---
 
@@ -61,12 +64,12 @@ Source of truth. Each row lists the step, skill to invoke, output file(s), wheth
 | 3 | `/novel-3-act-outliner` | `3-act-outline.md` | No (auto) | 3 |
 | 4 | `/build-the-world` | `world/world-map.md` + settings + character bios | YES (world name pick) | 4 |
 | 5 | `/outline-architect` | `3-act-outline.md` upgraded with `## Macro Architecture` | No (auto) | 5 |
-| 6 | `/book-title-generator` | `book-title.md` | YES (title pick) | 6 |
-| 7 | `/novel-chapter-mapper` | `[book-title]-chapter-map.md` | No (auto) | 7 |
-| 8 | `/novel-chapter-drafter` | `chapters/chapter-01.md` ... `chapter-NN.md` | No (production run — supports resume) | 8 |
-| 9 | `/novel-editor` | `chapters/*` (edited in place) | No (production run) | 9 |
-| 10 | `/novel-publisher` | `manuscript-final.md` | No (auto) | 10 |
-| 11 | `/book-cover-prompt-generator` | `book-cover-prompt.md` | No (auto, terminal) | 11 |
+| 6 | `/book-title-generator` | `book-title.md` (root) + creates `[Title]/` folder | YES (title pick) | 6 |
+| 7 | `/novel-chapter-mapper` | `[Title]/[title]-chapter-map.md` | No (auto) | 7 |
+| 8 | `/novel-chapter-drafter` | `[Title]/chapters/chapter-01.md` ... `chapter-NN.md` | No (production run — supports resume) | 8 |
+| 9 | `/novel-editor` | `[Title]/chapters/*` (edited in place) | No (production run) | 9 |
+| 10 | `/novel-publisher` | `[Title]/manuscript-final.md` | No (auto) | 10 |
+| 11 | `/book-cover-prompt-generator` | `[Title]/book-cover-prompt.md` | No (auto, terminal) | 11 |
 
 Decision points (Steps 1, 2, 4, 6) are the ONLY moments where the agentic workflow pauses for user input. Between these, every skill runs end-to-end without manual confirmation.
 
@@ -132,8 +135,8 @@ uv run [plugin-root]/scripts/pipeline_validator.py --book-dir "[book-folder]" --
 
 Step 8 (`/novel-chapter-drafter`) is the longest-running step. If a user stops mid-draft:
 
-1. The validator counts files in `chapters/` and compares to the chapter map total.
-2. If `chapters/` has N files and the map has M (N < M), the validator reports: `Resume from chapter-[N+1].md`.
+1. The validator counts files in `[Title]/chapters/` and compares to the chapter map total.
+2. If `[Title]/chapters/` has N files and the map has M (N < M), the validator reports: `Resume from chapter-[N+1].md`.
 3. When invoking `/novel-chapter-drafter`, pass this resume context:
    > "Invoking `/novel-chapter-drafter` in auto-chain resume mode. Existing chapters: chapter-01 through chapter-[N]. Resume from chapter-[N+1].md."
 4. The drafter skips existing files and begins at chapter [N+1].

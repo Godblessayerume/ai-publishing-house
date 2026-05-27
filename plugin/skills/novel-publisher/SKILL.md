@@ -18,17 +18,20 @@ This skill relies on the compiler script located at:
 `[plugin-root]/scripts/manuscript_compiler.py`
 
 ### Compiler Commands
-Run the compiler from the terminal inside your active book directory:
+The compiler is run from inside the **title folder** (created by Step 6 — see below). All chapters and the output manuscript live there.
+
+**Finding the title folder:** Read `book-title.md` at the book root, extract the `Final Title:` value, sanitize it (replace `:` with ` -`, remove `< > " / \ | ? *`). That sanitized string is the subfolder name.
 
 ```bash
-# Compile all chapters in the current directory to a Markdown master manuscript
-uv run [plugin-root]/scripts/manuscript_compiler.py --output manuscript_final.md
+# Compile all chapters in the title folder to a Markdown master manuscript
+cd "[book-root]/[sanitized-title]"
+uv run [plugin-root]/scripts/manuscript_compiler.py --output manuscript-final.md
 
 # Compile to a styled HTML document
 uv run [plugin-root]/scripts/manuscript_compiler.py --output index.html --format html
 
 # Compile using a custom JSON chapter index to enforce a strict chapter order
-uv run [plugin-root]/scripts/manuscript_compiler.py --output manuscript_final.md --index chapters_index.json
+uv run [plugin-root]/scripts/manuscript_compiler.py --output manuscript-final.md --index chapters_index.json
 ```
 
 ## Workflow
@@ -65,6 +68,6 @@ Verify that:
 
 When invoked by the orchestrator (`/ai-publishing-house`) in auto-chain mode, after the manuscript is compiled end with the exact line:
 
-> **Step 10 complete. Output: `[book-folder]/manuscript-final.md`**
+> **Step 10 complete. Output: `[book-folder]/[sanitized-title]/manuscript-final.md`**
 
 The orchestrator will then run `pipeline_validator.py --step 10` and route to Step 11 (`/book-cover-prompt-generator`). When invoked manually by the user, end as normal.

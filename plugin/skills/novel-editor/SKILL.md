@@ -17,9 +17,11 @@ An editing-pass skill. It reads each chapter file, checks it against all 14 rule
 
 Confirm all of the following exist in the active book's working directory:
 
-- All chapter files in `chapters/` — produced by `/novel-chapter-drafter`
+- All chapter files in `[title-folder]/chapters/` — produced by `/novel-chapter-drafter`
 - `references/author-voice-guide.md` — the 14 rules
-- `[book-title]-chapter-map.md` — to verify opening style, ending style, and Try-Fail for each chapter
+- `[title-folder]/[book-title]-chapter-map.md` — to verify opening style, ending style, and Try-Fail for each chapter
+
+**Finding the title folder:** Read `book-title.md` at the book root, extract the `Final Title:` value, sanitize it (replace `:` with ` -`, remove `< > " / \ | ? *`). The title folder was created by Step 6.
 
 If any chapter files are missing, stop and run `/novel-chapter-drafter` first.
 
@@ -27,7 +29,7 @@ If any chapter files are missing, stop and run `/novel-chapter-drafter` first.
 
 ## How the Editing Pass Works
 
-1. List all files in `chapters/` in order (`chapter-01.md` → `chapter-NN.md`)
+1. List all files in `[title-folder]/chapters/` in order (`chapter-01.md` → `chapter-NN.md`)
 2. Tell the user: "Editing [N] chapters. Starting now."
 3. Edit each chapter in sequence without pausing
 4. After all chapters are edited, report the full summary
@@ -44,7 +46,7 @@ Read the full chapter file.
 
 ### Step 2: Read the Chapter Map Entry
 
-From `[book-title]-chapter-map.md`, read this chapter's entry. Confirm:
+From `[title-folder]/[book-title]-chapter-map.md`, read this chapter's entry. Confirm:
 - Assigned opening style (Rule #1 check)
 - Assigned ending style (Rule #5 check)
 - Try-Fail type (Rule #13 check for climax chapters)
@@ -101,14 +103,14 @@ Rewrite the passages that violate the rules. Preserve all content and story beat
 
 ### Step 5: Save the File
 
-Write the edited version back to the same file path (`chapters/chapter-[NN].md`). The original is replaced.
+Write the edited version back to the same file path (`[title-folder]/chapters/chapter-[NN].md`). The original is replaced.
 
 ### Step 6: Run the Brand Voice Linter
 
 After saving, run the linter against the edited file:
 
 ```bash
-uv run [plugin-root]/scripts/brand_voice_linter.py chapters/chapter-[NN].md
+uv run [plugin-root]/scripts/brand_voice_linter.py [title-folder]/chapters/chapter-[NN].md
 ```
 
 The linter mechanically checks three rules:
@@ -161,6 +163,6 @@ The next step is `/novel-publisher`.
 
 When invoked by the orchestrator (`/ai-publishing-house`) in auto-chain mode, after all chapters are edited end with the exact line:
 
-> **Step 9 complete. Output: `[book-folder]/chapters/*` (edited in place, [N] chapters)**
+> **Step 9 complete. Output: `[book-folder]/[sanitized-title]/chapters/*` (edited in place, [N] chapters)**
 
 The orchestrator will then run `pipeline_validator.py --step 9` and route to Step 10 (`/novel-publisher`). When invoked manually by the user, end as described in the End of Editing Pass section above.

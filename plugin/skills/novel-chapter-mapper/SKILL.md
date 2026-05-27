@@ -174,7 +174,9 @@ Produce a summary table:
 
 ## Output
 
-Write the complete chapter map to: `[story-title]-chapter-map.md` in the active book's working directory.
+Write the complete chapter map to: `[title-folder]/[story-title]-chapter-map.md`.
+
+**Finding the title folder:** Read `book-title.md` at the book root, extract the `Final Title:` value, then derive the folder name: replace `:` with ` -` and remove `< > " / \ | ? *`. The title folder already exists — it was created by `/book-title-generator` in Step 6.
 
 Once the file is written, confirm to the user that the chapter map is complete and list the total chapters per act. The next step is `/novel-chapter-drafter`.
 
@@ -194,6 +196,6 @@ Once the file is written, confirm to the user that the chapter map is complete a
 
 When invoked by the orchestrator (`/ai-publishing-house`) in auto-chain mode, after writing the chapter map end with the exact line:
 
-> **Step 7 complete. Output: `[book-folder]/[book-title]-chapter-map.md`**
+> **Step 7 complete. Output: `[book-folder]/[sanitized-title]/[book-title]-chapter-map.md`**
 
 The orchestrator will then run `pipeline_validator.py --step 7` and route to Step 8 (`/novel-chapter-drafter`). When invoked manually by the user, end as described in the Output section above.
