@@ -1,0 +1,23 @@
+{
+  "name": "ai-publishing-house",
+  "version": "1.1.0",
+  "description": "Agentic novel creation pipeline — slash commands and skills to plan, draft, edit, and publish fiction novels end-to-end.",
+  "author": {
+    "name": "Godbless Ayerume",
+    "url": "https://github.com/godblessayerume"
+  },
+  "license": "Apache 2.0",
+  "keywords": [
+    "novel",
+    "fiction",
+    "writing",
+    "publishing",
+    "creative-writing",
+    "storytelling",
+    "agentic-workflow"
+  ],
+  "config": {
+    "vaultPath": "C:\\Users\\HP\\Documents\\Fiction Library",
+    "defaultChapterLength": 1200
+  }
+}

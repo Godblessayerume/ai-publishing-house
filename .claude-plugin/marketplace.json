@@ -1,0 +1,23 @@
+{
+  "name": "ai-publishing-house",
+  "version": "1.0.0",
+  "description": "A complete novel creation pipeline — genre selection, story seed, outlining, world-building, chapter drafting, editing, and publishing.",
+  "owner": {
+    "name": "Godbless Ayerume",
+    "url": "https://github.com/godblessayerume"
+  },
+  "plugins": [
+    {
+      "name": "ai-publishing-house",
+      "description": "A complete novel creation pipeline — from genre selection through drafting, editing, and publishing.",
+      "source": "./plugin",
+      "version": "1.0.0",
+      "author": {
+        "name": "Godbless Ayerume",
+        "url": "https://github.com/godblessayerume"
+      },
+      "category": "productivity",
+      "tags": ["fiction", "writing", "novel", "publishing"]
+    }
+  ]
+}
