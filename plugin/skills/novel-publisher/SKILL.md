@@ -68,6 +68,6 @@ Verify that:
 
 When invoked by the orchestrator (`/ai-publishing-house`) in auto-chain mode, after the manuscript is compiled end with the exact line:
 
-> **Step 10 complete. Output: `[book-folder]/[sanitized-title]/manuscript-final.md`**
+> **Step 11 complete. Output: `[book-folder]/[sanitized-title]/manuscript-final.md`**
 
-The orchestrator will then run `pipeline_validator.py --step 10` and route to Step 11 (`/book-cover-prompt-generator`). When invoked manually by the user, end as normal.
+The orchestrator will then run `pipeline_validator.py --step 11` and route to Step 12 (`/novel-proofreader`). When invoked manually by the user, end as normal.

@@ -48,13 +48,13 @@ Ask the user two questions together:
 > "What sub-genre is this story? And what should we call this project? (The project name becomes the working folder — use something short, e.g. `the-king-project` or `iron-court`. The real book title is decided later at Step 6.)"
 
 - Accept the sub-genre exactly as stated. Do not modify or rephrase it.
-- Convert the project name to a folder slug: lowercase, spaces to hyphens, remove punctuation.
+- Convert the project name to a folder sub-genre: lowercase, spaces to hyphens, remove punctuation.
 
 Confirm with the user:
 
-> "Got it — sub-genre: **[sub-genre]**. Working folder: `[vaultPath]/[project-slug]/`. Creating it now."
+> "Got it — sub-genre: **[sub-genre]**. Working folder: `[vaultPath]/[sub-genre]/`. Creating it now."
 
-Create the folder at `[vaultPath]/[project-slug]/`. All output files for this book go inside this folder. The folder is created here — no other skill creates it.
+Create the folder at `[vaultPath]/[sub-genre]/`. All output files for this book go inside this folder. The folder is created here — no other skill creates it.
 
 ---
 

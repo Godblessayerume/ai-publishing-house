@@ -113,10 +113,10 @@ After saving, run the linter against the edited file:
 uv run [plugin-root]/scripts/brand_voice_linter.py [title-folder]/chapters/chapter-[NN].md
 ```
 
-The linter mechanically checks three rules:
-- **Blocky opener** — first paragraph must be a single sentence (Rule #1)
-- **Blocky paragraph** — no paragraph longer than 4 sentences (Rule #10)
-- **Pronoun density** — pronoun ratio must stay under 15% per paragraph (Rule #14)
+The linter mechanically checks:
+- **Blocky opener** `[WARNING]` — first paragraph must be a single sentence (Rule #1)
+- **Pronoun opener** `[WARNING]` — paragraph begins with she/he/they before the character is named (Rule #14)
+- **Pronoun run** `[INFO]` — three or more consecutive sentences starting with the same subject pronoun (Rule #14)
 
 If the linter reports any `[WARNING]` violations, fix them before moving to the next chapter. `[INFO]` suggestions are advisory — use your judgement.
 

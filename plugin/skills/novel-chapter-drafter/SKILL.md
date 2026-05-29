@@ -74,12 +74,6 @@ Use the setting's physical details to anchor the chapter's sensory layer — geo
 
 Read `references/author-voice-guide.md` — all 14 rules. Apply them throughout the draft.
 
-Key rules to apply at the chapter level:
-- **Rule #1** — The first sentence is the assigned opening style: a single sentence that establishes Who, Where, and Genre/Mood
-- **Rule #5** — The final sentence matches the assigned ending style
-- **Rule #7** — Dialogue moves past each other, not at each other. Characters do not explain the plot to each other.
-- **Rule #14** — Pronouns disappear the character. Use character names, not she/he, where possible.
-
 ---
 
 ## Writing the Chapter

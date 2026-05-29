@@ -18,6 +18,7 @@
   ],
   "config": {
     "vaultPath": "C:\\Users\\HP\\Documents\\Fiction Library",
-    "defaultChapterLength": 1200
+    "defaultChapterLength": 1200,
+    "authorName": "Godbless Ayerume"
   }
 }

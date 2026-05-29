@@ -16,13 +16,15 @@ description: >-
 
 ## Before You Begin
 
-Read the following files from the active book's working directory:
+Read the following files:
 
+- `[plugin-root]/plugin.json` — read `config.authorName` (the author's name as it appears on the cover)
 - `story-config.md` — sub-genre and stacked plot archetypes
 - `story-seed.md` — characters, world, conflict, and tone
 - `3-act-outline.md` — themes, arc, and story scope
+- `[title-folder]/book-title.md` (or root `book-title.md`) — the final book title
 
-If any are missing, ask the user to provide the relevant story details directly before proceeding.
+If `config.authorName` is missing from `plugin.json`, ask the user for their name before proceeding. If any story files are missing, ask the user to provide the relevant story details directly before proceeding.
 
 ---
 
@@ -52,7 +54,7 @@ This skill is designed to run after the pipeline has produced its core files. Ev
 
 Before generating a single word of the prompt, gather the following from the pipeline files:
 
-1. The **title** and the **author name** exactly as they will appear on the cover.
+1. The **title** from `book-title.md` (`Final Title:` line) and the **author name** from `plugin.json` `config.authorName` — exactly as they will appear on the cover.
 2. The **story summary** — not a pitch, not a tagline, but a clear description of what happens in the story: who the protagonist is, what they want, what stands in their way, and what the stakes are if they fail.
 3. The **sub-genre** exactly as the user already labeled it in `story-config.md`. If the story says "epic fantasy," the sub-genre is "epic fantasy." Do not upgrade it to "dark high fantasy with political intrigue and dragon-rider elements."
 4. The **tone and mood** — how does the story feel to read? Dark and brutal? Warm and whimsical? Tense and paranoid? Lyrical and melancholic?
@@ -63,49 +65,45 @@ Only ask the user for information that is genuinely absent from the pipeline fil
 
 ---
 
-## Step #1: Competitive Shelf Analysis (Do This Before Everything Else)
+## Literal Text Block — Required, Verbatim
 
-This is the step that most cover design advice skips, and it is the most important step of all.
+The cover has up to FOUR pieces of literal text that must appear on the rendered image: the **title**, the **author name**, the **sub-genre tag**, and (if present) the **parenthetical subtitle**. Each one must be extracted verbatim from its source file BEFORE the prompt is written, and each one must appear as a `text:` line in the Typography section of the final prompt.
 
-Before making a single decision about the cover — before choosing a color palette, before deciding which element goes forward, before thinking about typography — you need to know what the shelf looks like. The shelf is the collection of covers that the book will sit next to on Amazon. It is the visual competition the cover has to win against or deliberately stand apart from.
+This is the single most common failure mode of this skill. The agent reads the sub-genre as a *classifier* (correctly selecting palette + typography + motifs from the Sub-Genre Visual Convention Table), then writes a generic market-conventional tag on the cover — e.g., substituting "A LITRPG NOVEL" for the user's actual sub-genre "Retirement Home Regression LitRPG." The sub-genre string serves TWO independent purposes and they are not interchangeable:
 
-Here is how to think about it. Imagine a reader who loves epic fantasy. They open Amazon and type "epic fantasy" into the search bar. They scroll through the results. Their eyes move fast. Their brain is doing something remarkable: it is scanning all those covers simultaneously and sorting them into categories. "Seen this style before — yes." "Seen this style before — no." "This one is different — maybe." "This one looks cheap — skip." "This one looks exactly like the last five books I loved — click."
+1. **Classifier** — selects which visual conventions apply from the Sub-Genre Visual Convention Table (palette, typography style, motifs)
+2. **Literal printed text** — the exact tag that must appear at the top of the cover
 
-That reader's brain has been trained by hundreds of covers. It has built up a visual vocabulary for what epic fantasy looks like. When the cover appears in those results, it either speaks that vocabulary or it does not. If it does not, the reader does not know what to do with it, and so they skip it.
+Never substitute a market-conventional rewrite for the source string. The niche label was chosen deliberately in the genre-picker step and is part of the book's market positioning. A user who locked in "Retirement Home Regression LitRPG" wants those exact words on the cover, not "A LITRPG NOVEL." The image generator only places text it is given — if the prompt does not contain the literal string, no string appears on the cover.
 
-The competitive shelf analysis gives you that vocabulary.
+Before writing the prompt, fill out this extraction table and keep it visible while writing:
 
-**How to conduct the competitive shelf analysis:**
+| Cover element | Source file | Source location | Literal string (extract verbatim) |
+|---|---|---|---|
+| Title text | `book-title.md` | `Final Title:` line | |
+| Parenthetical subtitle (if any) | `book-title.md` | inside the Final Title parenthetical | |
+| Author name | `plugin.json` | `config.authorName` | |
+| Sub-Genre tag text | `story-config.md` | `## Sub-Genre:` line | |
 
-Ask the user to go to Amazon.com and search for their exact sub-genre label. If their book is a grimdark fantasy, they search "grimdark fantasy." If it is a LitRPG, they search "LitRPG." If it is a romantasy, they search "romantasy." They should do this search and look at the first two pages of results — the books that Amazon's algorithm considers the most relevant and successful for that search term.
+When the Typography section of the prompt is written, every typographic element MUST be specified with the `text:` line FIRST, in this format:
 
-Ask the user to identify five covers from those results that they feel represent the genre well — not necessarily covers they personally love, but covers that clearly look like they belong in that genre. These are the comp covers.
+```
+[Element] text: **[VERBATIM STRING FROM SOURCE]**
+[Element] typeface: ...
+[Element] size: ...
+[Element] position: ...
+[Element] color: ...
+```
 
-For each of the five comp covers, extract the following information:
+A typography spec that describes formatting without specifying the literal string is incomplete. The image generator has no way to render text it was never given.
 
-**The dominant color family.** What is the single most prominent color on this cover? Is it warm (reds, oranges, golds) or cool (blues, purples, silvers)? Is it saturated or desaturated? Is it dark and heavy or light and airy?
+### One More Rule: Each Cover Prompt Stands Alone
 
-**Which element is forward.** Is the cover leading with a character (profile-forward)? Is it leading with a landscape or world (landscape-forward)? Is it leading with a symbolic object (object-forward)? Is it leading with the typography (type-forward)?
-
-**The render style.** Does this cover look like a painting? A photograph? A digital illustration? Does it have a realistic, painterly quality (like traditional fantasy art) or a cleaner, more graphic quality (like illustrated cozy fantasy) or a high-contrast digital render quality (like LitRPG)?
-
-**The typography treatment.** Is the title font a serif (with small horizontal lines at the ends of the letters) or a sans-serif (clean, without those lines)? Is it tall and condensed or wide and bold? Does it have any special effects — embossing, gold foil, distressing, glowing edges? How big is the author name relative to the title?
-
-**Any recurring motifs.** Are there specific visual elements that appear on multiple covers? In romantasy, filigree patterns and roses appear constantly. In grimdark, chains and broken weapons appear constantly. In space opera, ships and nebulae appear constantly. These recurring elements are genre signals — the visual shorthand that tells the reader what kind of story this is.
-
-After analyzing all five comp covers, look for patterns. What do three or more of them have in common? Those common elements are the genre conventions — the things the cover must include (or must deliberately and strategically exclude) to communicate the right genre signal.
-
-Write down:
-
-- What is consistent across the majority of comp covers. (These are the conventions to almost certainly follow.)
-- What varies across comp covers. (These are areas where there is room to differentiate.)
-- What is absent from all comp covers. (These are potential white space opportunities — visual approaches that no one else on the shelf is using yet, which means they could make the cover stand out if executed well. But be careful: something absent from all comp covers might be absent for a good reason.)
-
-This competitive shelf analysis becomes the foundation for every decision in the steps that follow.
+When the user asks for a second or third cover variant (V2, V3, etc.), each prompt MUST be self-contained. Do NOT reference "V1" or "the other version" in the prompt — the image generator only ever sees one prompt at a time and has no context for cross-references. Repeat any values (color codes, typography choices, signature details) the variants share as the prompt's own choices, not as "same as V1."
 
 ---
 
-## Step #2: Understanding the Four Cover Elements and What Each One Sells
+## Step #1: Understanding the Four Cover Elements and What Each One Sells
 
 Every book cover in the history of publishing is built from some combination of four fundamental elements. Understanding what each element communicates is the foundation of everything else in this skill.
 
@@ -143,7 +141,7 @@ Confusing them produces covers that feel muddled — where the character is too 
 
 ---
 
-## Step #3: Choose the Forward Element — The Most Important Decision
+## Step #2: Choose the Forward Element — The Most Important Decision
 
 The forward element is the element that dominates the cover. It is the element that gets the most visual real estate, the most contrast, the most detail, the most light. It is the first thing the reader's eye lands on. Everything else on the cover is either supporting the forward element or staying out of its way.
 
@@ -151,29 +149,9 @@ Choosing the wrong forward element is the most common mistake writers make when 
 
 The forward element is chosen by answering one question: **what is the single biggest reason someone who has never heard of this book would want to read it?**
 
-**Decision guidance by sub-genre:**
-
-**Epic Fantasy** — landscape-forward (scale mode) or profile-forward depending on whether the story's primary hook is the scope of the world or the arc of the protagonist.
-
-**Grimdark Fantasy** — almost always profile-forward or object-forward. A grimdark cover that leads with a beautiful landscape says "epic fantasy" to the reader, not "grimdark."
-
-**Romantasy** — always profile-forward, no exceptions in the current market. Romantasy is selling a relationship between specific people, and the cover must communicate that specific people exist and that they are compelling to look at.
-
-**Cozy Fantasy** — profile-forward or object-forward with a specific illustrated quality. The forward element must immediately communicate warmth and safety.
-
-**LitRPG** — profile-forward or landscape-forward with a digital-render or anime-adjacent quality that signals the sub-genre immediately.
-
-**Space Opera** — splits between landscape-forward (scale mode, ships or fleet in a vast cosmic environment) and profile-forward depending on whether the story's hook is the scale of the universe or the characters navigating it.
-
-**Hard Science Fiction** — often object-forward or landscape-forward (world mode, not scale mode). Hard sci-fi that goes profile-forward risks looking like a thriller.
-
-**Dark Fantasy (Horror-Adjacent)** — object-forward or profile-forward with heavy shadow treatment.
-
-**Solarpunk** — landscape-forward (world mode) because the genre is fundamentally about imagining a better world, and that world is the entire point.
-
 ---
 
-## Step #4: The Sub-Genre Visual Convention Table
+## Step #3: The Sub-Genre Visual Convention Table
 
 Every decision about the cover — color palette, typography, render style, motifs, composition — should be checked against these conventions. If the cover departs from these conventions, that departure needs to be intentional and strategic.
 
@@ -303,7 +281,7 @@ Every decision about the cover — color palette, typography, render style, moti
 
 ---
 
-## Step #5: The Magic System and Technology Visual Signature
+## Step #4: The Magic System and Technology Visual Signature
 
 The magic system or technology system in the story has a visual signature — a specific appearance that exists only in this world. That visual signature, if incorporated into the book cover, does something nothing else can: it tells the reader not just what genre this is, but what this story's specific power system looks and feels like.
 
@@ -321,17 +299,16 @@ Before writing the prompt, answer these questions about the magic or technology 
 
 ---
 
-## Step #6: Assemble the Specifications
+## Step #5: Assemble the Specifications
 
 Before writing a single word of the final prompt, every specification must be decided and written down. Writing the prompt while still making decisions produces muddled, contradictory prompts.
 
 Go through this checklist and write a specific answer for every field:
 
-**Sub-genre tag text and styling:**
-- What text will appear in the sub-genre tag at the top of the cover? This text should match the exact sub-genre text from `story-config.md`. Examples: "A LITRPG ADVENTURE," "AN EPIC FANTASY," "A GRIMDARK FANTASY NOVEL," "A COZY MYSTERY," "A SPACE OPERA EPIC."
-- Position: top and center aligned
-- Color: pulled from the accent palette
-- Size: approximately one-third the height of the title letterforms; must be visible at Amazon thumbnail scale
+**Finding the title folder:** Read `book-title.md` at the book root, extract the `Final Title:` value, sanitize it (remove `: - < > " / \ | ? *`). The title folder was created by Step 6.
+
+**Finding the Sub-genre tag text and folder:** Read `story-config.md` at the book root, extract the `Sub-Genre:` value, sanitize it (remove `: - < > " / \ | ? *`). The sub-genre folder was created by Step 1.
+
 
 **Primary element description:** A precise description of exactly what the forward element is, how it sits in the composition, what it is doing, what it is wearing or made of, what emotional quality it communicates, and how it is lit. Not "a woman with long silver hair in a dark cloak." A sufficient description says: where on the cover she is positioned (which third, which side), how much of her is visible (full body, waist up, face only), what direction she faces, what her physical posture communicates, what specific details of her appearance carry the magic system's visual signature, and how the light hits her.
 
@@ -351,47 +328,31 @@ Go through this checklist and write a specific answer for every field:
 
 ---
 
-## Step #7: Write the Final Prompt
+Every decision from Steps #1 through #5 is assembled into the final prompt. The prompt is written for the image generator, not for a human reader — it needs to be specific, visual, and unambiguous. Use exactly this format.
 
-Every decision from Steps #1 through #6 is assembled into the final prompt. The prompt is written for the image generator, not for a human reader — it needs to be specific, visual, and unambiguous. Use exactly this format:
+## Output
 
----
+Write the completed prompt to: `[title-folder]/book-cover-prompt.md`.
 
-```markdown
+**IMPORTANT RULE:** fILL the markdown Temaplate below. The file should contain only the final formatted prompt — no planning notes, no skill commentary, no intermediate decisions. The user should be able to open the file and paste the prompt directly into their image generator of choice.
+
+
+```markdown tempalate
 **Create a book cover that is [PRIMARY ELEMENT]-Forward, with secondary emphasis on [SECONDARY ELEMENT]. The cover must communicate [THE CORE INTUITIVE READ — one sentence describing what the reader feels in the first second] within one second of being seen at thumbnail scale.**
 
 [STRATEGIC PARAGRAPH: Three sentences maximum. Sentence one explains why the forward element was chosen and what it communicates about the story. Sentence two explains how the secondary element supports the forward element without competing with it. Sentence three states the genre signal the cover must hit and the emotional register it must land in.]
-
----
-
-**Sub-Genre Tag — Top of Cover Banner:**
-
-Exact text: "[SUBGENRE LABEL IN ALL CAPS]"
-Position: Top of cover, horizontally centered.
-Size: Approximately one-third the cap height of the title typeface. Must be fully legible at Amazon thumbnail size (~160px wide).
-Typeface treatment: [SPECIFIC FONT STYLE]
-Color: [SPECIFIC COLOR pulled from the cover's accent palette]
-Tone: [HOW IT SHOULD FEEL]
-
----
 
 **Primary Element — [TYPE/OBJECT/PROFILE/LANDSCAPE] (~[PERCENTAGE]%):**
 
 [COMPLETE PRECISE DESCRIPTION. What it is. Exactly where it sits in the composition (use thirds: upper left, center right, lower center, etc.). How large it is relative to the total cover area. What physical state it is in. What direction it faces. What it is doing. How it is lit — where the light comes from, what color the light is, how it falls on the element. What specific details communicate the story's magic system or technology aesthetic. What emotional quality the element communicates.]
 
----
-
 **Secondary Element — [TYPE/OBJECT/PROFILE/LANDSCAPE] (~[PERCENTAGE]%):**
 
 [COMPLETE PRECISE DESCRIPTION. What it is. Where it sits relative to the primary element. How it is visually subordinated — softer in focus, lower in contrast, darker in tone, smaller in scale, more atmospheric. What details are visible and what details are deliberately softened or obscured.]
 
----
-
 **Magic System / Technology Visual Signature:**
 
 [DESCRIPTION OF HOW THE STORY'S SPECIFIC POWER SYSTEM APPEARS VISUALLY ON THE COVER. What color is the power. What physical behavior does it have — does it glow, flow, crystallize, distort, consume, ignite? Where on the cover is it visible? What texture does it have at close range? What emotional quality should its visual appearance communicate?]
-
----
 
 **Color Palette:**
 
@@ -401,45 +362,41 @@ Accent color: [SPECIFIC NAME AND HEX — the single most saturated, concentrated
 Tonal direction: [Predominantly warm or cool? Where is the lightest point? Where is the darkest point? Does it transition from warm to cool?]
 Colors to explicitly avoid: [Any specific colors that would signal the wrong sub-genre, wrong tone, or wrong era]
 
----
-
 **Mood and Atmosphere:**
 
 [FIVE SPECIFIC PHRASES describing the exact emotional experience the cover should produce. Each phrase should be specific enough that it could not apply to any other book — not "dark and atmospheric" but "the specific dread of knowing what is about to happen and being unable to stop it."]
 
----
-
 **Typography:**
 
+Title text: **[VERBATIM string from `book-title.md` `Final Title:` line, rendered in ALL CAPS on the cover]**
 Title typeface: [EXACT STYLE DESCRIPTION — serif or sans-serif, condensed or expanded, traditional or modern, any special treatment]
 Title size: [Dominant — occupying approximately what percentage of the cover width?]
 Title color and finish: [Specific color, any effects such as foil simulation, embossing, glow, distress]
-Title position: [Upper third / lower third / centered / aligned to the left]
+Title position: [Upper third / lower third / centered / aligned to the left / vertically aligned / etc.]
+~
+Author name text: **[VERBATIM string from `plugin.json` `config.authorName`, rendered in ALL CAPS on the cover]**
 Author name typeface: [Same as title or complementary secondary font]
 Author name size: [Relative to title — debut author typically at 1/3 to 1/4 the title size]
-Author name position: [Below the title / above the title / at the bottom of the cover]
+Author name position: [Below the title / above the title / at the bottom of the cover, set approximately [X] pixels above the lower edge.]
 Author name color: [Typically same as the title or in the accent color]
-Series name (if applicable): [Position, size relative to title, typeface, color]
-
----
+~
+Sub-Genre tag text: **[VERBATIM string from `story-config.md` `## Sub-Genre:` line, rendered in ALL CAPS on the cover — do NOT substitute a market-conventional rewrite like "A LITRPG NOVEL" or "A FANTASY ADVENTURE"; the user's exact niche label is part of the book's market positioning]**
+Sub-Genre tag typeface: [Same as title/author or complementary secondary font]
+Sub-Genre tag size: [Relative to author name — debut sub-genre tag typically at 2/3 to 3/4 the author name size]
+Sub-Genre tag position: [ ABSOLUTE POSITION — Top of cover. Horizontally centered and set approximately [X] pixels below the upper edge.]
+Sub-Genre tag color: [Typically the accent color]
 
 **Genre Cues:**
 
 [A DETAILED LIST OF SPECIFIC MOTIFS that will communicate the sub-genre signal to a reader scanning at thumbnail scale. Each motif described precisely enough that it could be illustrated: not "fantasy elements" but "the faint outline of a dragon's wing cutting across the upper right corner, visible only in silhouette against the sky." Include at least four to six specific motifs from the sub-genre convention table in Step Four.]
 
----
-
 **Composition:**
 
 [A PRECISE SPATIAL DESCRIPTION of where every element lives on the cover. Use the nine-zone grid (upper left / upper center / upper right / middle left / center / middle right / lower left / lower center / lower right) to specify every major element's location. Describe the sight lines — where does the eye enter the cover and where does it travel? Where is negative space used deliberately? Is the composition balanced and stable, or dynamic and slightly unstable?]
 
----
-
 **Texture and Finish:**
 
 [SPECIFIC MATERIAL QUALITY. What does this cover feel like if you could touch it? Is there visible paper grain, brush texture, painted surface, photographic sharpness, digital precision, or hand-drawn line quality? How does the texture affect the reading of the primary element versus the secondary element?]
-
----
 
 **Output Specifications:**
 
@@ -456,6 +413,9 @@ Do not deliver the prompt until every question in this gate can be answered with
 
 - Did the competitive shelf analysis happen, and are the cover's decisions visibly grounded in what the comp covers said about genre conventions? If no, go back to Step One.
 - Were the genre label, sub-genre label, story summary, character descriptions, and world details pulled from the pipeline files rather than invented? If any detail was invented — any character physical attribute, any world-building element, any magic system description — remove it and replace it with a question to the user.
+- Does the prompt contain a literal `Title text:`, `Author name text:`, and `Sub-Genre tag text:` line in the Typography section — each containing the VERBATIM string from its source file? If any of these `text:` lines is missing, contains a paraphrase, a market-conventional rewrite, or an invented string, fix it before delivering. The image generator only places text it is given.
+- Is the Sub-Genre tag text the EXACT string from `story-config.md` `## Sub-Genre:` line? Never substitute "A [GENRE] NOVEL" or any other market-conventional shorthand for the source string. The niche label was chosen deliberately in the genre-picker step and is part of the book's market positioning.
+- If multiple cover variants are being generated (V2, V3, etc.) in the same session, is each prompt fully self-contained — with no references to "V1" or "the other version"? The image generator never sees more than one prompt at a time. Repeat shared values as the prompt's own choices, never as cross-references.
 - Is the sub-genre tag present at the very top of the cover, specified with exact text, exact position, exact size relative to the title, exact color pulled from the cover palette, and a clear tonal description? If not, add it.
 - Does the primary element specification contain enough precision that an AI image generator could render it without ambiguity? "A woman in a cloak" is not precise enough. A precise description says where on the cover she is positioned (which third, which side), how much of her is visible, what direction she faces, what her posture communicates, what details carry the magic system's visual signature, and how the light hits her.
 - Is the secondary element visually subordinated to the primary in the prompt language?
@@ -467,22 +427,10 @@ Do not deliver the prompt until every question in this gate can be answered with
 
 ---
 
-## Output
-
-Write the completed prompt to: `[title-folder]/book-cover-prompt.md`.
-
-**Finding the title folder:** Read `book-title.md` at the book root, extract the `Final Title:` value, sanitize it (replace `:` with ` -`, remove `< > " / \ | ? *`). The title folder was created by Step 6.
-
-The file should contain only the final formatted prompt — no planning notes, no skill commentary, no intermediate decisions. The user should be able to open the file and paste the prompt directly into their image generator of choice.
-
-The next step is to paste the prompt into Midjourney, DALL-E, Adobe Firefly, Imagen, or any preferred AI image generation tool.
-
----
-
 ## Agentic Handoff
 
 When invoked by the orchestrator (`/ai-publishing-house`) in auto-chain mode, after the cover prompt file is written end with the exact line:
 
-> **Step 11 complete. Output: `[book-folder]/[sanitized-title]/book-cover-prompt.md`**
+> **Step 13 complete. Output: `[book-folder]/[sanitized-title]/book-cover-prompt.md`**
 
-The orchestrator will then run `pipeline_validator.py --step 11` and report that the pipeline is complete. This is the terminal step — no further skills follow. When invoked manually by the user, end as described above.
+The orchestrator will then run `pipeline_validator.py --step 13` and route to Step 14 (`/amazon-upload-kit`). When invoked manually by the user, end as described above.

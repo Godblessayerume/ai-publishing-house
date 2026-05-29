@@ -25,7 +25,7 @@ The agentic driver for the novel-creation pipeline. This skill operates in three
 
 All book output files live in the Fiction Library vault. The vault path is set in `plugin.json` under `config.vaultPath` (default: `C:\Users\HP\Documents\Fiction Library`).
 
-Each book has its own folder inside the vault. The folder is created by `/novel-genre-picker` (Step 1) using a working project slug.
+Each book has its own folder inside the vault. The folder is created by `/novel-genre-picker` (Step 1) using a working project name.
 
 ```
 Fiction Library/
@@ -40,13 +40,16 @@ Fiction Library/
     │   └── characters/
     │       ├── character-list.md
     │       └── bios/
-    └── [Sanitized Title]/       ← Step 6 creates this folder; Steps 7-11 write here
+    └── [Sanitized Title]/       ← Step 6 creates this folder; Steps 7-14 write here
         ├── [title]-chapter-map.md   ← Step 7
-        ├── chapters/                ← Steps 8-9
+        ├── chapters/                ← Steps 8-10
         │   ├── chapter-01.md
         │   └── ...
-        ├── manuscript-final.md      ← Step 10
-        └── book-cover-prompt.md     ← Step 11
+        ├── copyedit-report.md       ← Step 10
+        ├── manuscript-final.md      ← Step 11
+        ├── proofread-report.md      ← Step 12
+        ├── book-cover-prompt.md     ← Step 13
+        └── amazon-upload-kit.md     ← Step 14
 ```
 
 **Title folder name rule:** The folder name is the `Final Title` from `book-title.md` with `:` replaced by ` -` and Windows-illegal characters (`< > " / \ | ? *`) removed. Example: `The Iron King: Reborn` → `The Iron King - Reborn`.
@@ -59,7 +62,7 @@ Source of truth. Each row lists the step, skill to invoke, output file(s), wheth
 
 | Step | Skill | Output file(s) | Decision point? | Validator step |
 |---|---|---|---|---|
-| 1 | `/novel-genre-picker` | `story-config.md` | YES (sub-genre + slug, then archetype stack) | 1 |
+| 1 | `/novel-genre-picker` | `story-config.md` | YES (sub-genre, then archetype stack) | 1 |
 | 2 | `/novel-story-seed-writer` | `story-seed.md` | YES (story sketch input) | 2 |
 | 3 | `/novel-3-act-outliner` | `3-act-outline.md` | No (auto) | 3 |
 | 4 | `/build-the-world` | `world/world-map.md` + settings + character bios | YES (world name pick) | 4 |
@@ -67,9 +70,12 @@ Source of truth. Each row lists the step, skill to invoke, output file(s), wheth
 | 6 | `/book-title-generator` | `book-title.md` (root) + creates `[Title]/` folder | YES (title pick) | 6 |
 | 7 | `/novel-chapter-mapper` | `[Title]/[title]-chapter-map.md` | No (auto) | 7 |
 | 8 | `/novel-chapter-drafter` | `[Title]/chapters/chapter-01.md` ... `chapter-NN.md` | No (production run — supports resume) | 8 |
-| 9 | `/novel-editor` | `[Title]/chapters/*` (edited in place) | No (production run) | 9 |
-| 10 | `/novel-publisher` | `[Title]/manuscript-final.md` | No (auto) | 10 |
-| 11 | `/book-cover-prompt-generator` | `[Title]/book-cover-prompt.md` | No (auto, terminal) | 11 |
+| 9 | `/novel-editor` | `[Title]/chapters/*` (line edited in place) | No (production run) | 9 |
+| 10 | `/novel-copyeditor` | `[Title]/chapters/*` (copyedited in place) + `[Title]/copyedit-report.md` | No (auto) | 10 |
+| 11 | `/novel-publisher` | `[Title]/manuscript-final.md` | No (auto) | 11 |
+| 12 | `/novel-proofreader` | `[Title]/manuscript-final.md` (proofed) + `[Title]/proofread-report.md` | No (auto) | 12 |
+| 13 | `/book-cover-prompt-generator` | `[Title]/book-cover-prompt.md` | No (auto) | 13 |
+| 14 | `/amazon-upload-kit` | `[Title]/amazon-upload-kit.md` | No (auto, terminal) | 14 |
 
 Decision points (Steps 1, 2, 4, 6) are the ONLY moments where the agentic workflow pauses for user input. Between these, every skill runs end-to-end without manual confirmation.
 
@@ -106,7 +112,7 @@ Core agentic behavior. After detecting intent and the next pending step, run:
    uv run [plugin-root]/scripts/pipeline_validator.py --book-dir "[book-folder]" --step [N]
    ```
 4. **Branch on the result:**
-   - Exit code 0 (OK): set N = N+1. If N > 11, report pipeline complete with final outputs. Otherwise loop back to step 1.
+   - Exit code 0 (OK): set N = N+1. If N > 14, report pipeline complete with final outputs. Otherwise loop back to step 1.
    - Exit code 1 (FAIL): STOP. Show the validator's reason. Ask the user whether to retry Step N or fix the file manually.
 
 Decision-point skills (Steps 1, 2, 4, 6) handle their own user-input pauses internally — the orchestrator does not need separate logic, just wait for the handoff line.
@@ -148,8 +154,8 @@ The same resume logic applies to Step 9 if the editor was interrupted (less comm
 ## Mode 1 — Starting a New Book (`new`)
 
 1. Skip vault scan.
-2. Invoke `/novel-genre-picker` in auto-chain mode. No book folder yet — the genre picker creates it from the user-provided slug.
-3. The genre picker handles its two internal decision points (sub-genre+slug, then archetype stack).
+2. Invoke `/novel-genre-picker` in auto-chain mode. No book folder yet — the genre picker creates it from the user-provided.
+3. The genre picker handles its two internal decision points (sub-genre, then archetype stack).
 4. When the genre picker returns with `Step 1 complete. Output: [book-folder]/story-config.md`, extract the book folder path.
 5. Enter the auto-chain loop from Step 2 with that book folder.
 
@@ -190,7 +196,7 @@ The same resume logic applies to Step 9 if the editor was interrupted (less comm
 
 The orchestrator pauses for user input ONLY at:
 
-1. **Step 1, Part A** — sub-genre + project slug (inside `/novel-genre-picker`)
+1. **Step 1, Part A** — sub-genre + project (inside `/novel-genre-picker`)
 2. **Step 1, Part C** — archetype stack confirmation (inside `/novel-genre-picker`)
 3. **Step 2** — story sketch input (inside `/novel-story-seed-writer`)
 4. **Step 4** — world name pick from 20 options (inside `/build-the-world`)
